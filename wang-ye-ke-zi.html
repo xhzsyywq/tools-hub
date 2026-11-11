@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>网页壳子</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6f5f1;
+        --surface: #fffdf9;
+        --surface-2: #efede6;
+        --ink: #1c1a17;
+        --ink-2: #4c4741;
+        --ink-3: #837c72;
+        --line: #ddd8cc;
+        --accent: #b23a26;
+        --accent-ink: #ffffff;
+        --accent-soft: #f6e3dd;
+        --ok: #2e7d4f;
+        --ok-soft: #e0efe4;
+        --wait: #9a6a14;
+        --wait-soft: #f4ead2;
+        --shadow: 0 1px 2px rgba(28, 26, 23, .05), 0 8px 24px -12px rgba(28, 26, 23, .18);
+        --radius: 14px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #171512;
+          --surface: #201d19;
+          --surface-2: #2a2621;
+          --ink: #f0ece4;
+          --ink-2: #c9c2b6;
+          --ink-3: #978e80;
+          --line: #3a352e;
+          --accent: #e0684e;
+          --accent-ink: #1c100c;
+          --accent-soft: #3d2620;
+          --ok: #6fbf8d;
+          --ok-soft: #22362a;
+          --wait: #d9ab4e;
+          --wait-soft: #3a3120;
+          --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -12px rgba(0,0,0,.6);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; }
+      button, input { font: inherit; }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+
+      /* ---------- 顶栏 ---------- */
+      .topbar {
+        position: sticky; top: 0; z-index: 20;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .topbar-in {
+        max-width: 1180px; margin: 0 auto; padding: 0 20px;
+        display: flex; align-items: center; gap: 20px; min-height: 60px;
+      }
+      .wordmark {
+        font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 20px;
+        letter-spacing: .04em; text-decoration: none; white-space: nowrap;
+      }
+      .wordmark em { font-style: normal; color: var(--accent); }
+      .topnav { display: flex; gap: 4px; margin-left: 6px; }
+      .topnav a {
+        text-decoration: none; color: var(--ink-2); font-size: 15px; font-weight: 500;
+        padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; min-height: 36px;
+      }
+      .topnav a:hover { background: var(--surface-2); color: var(--ink); }
+      .topnav a[aria-current="page"] { color: var(--accent); }
+      .topsearch { margin-left: auto; position: relative; flex: 0 1 300px; }
+      .topsearch input {
+        width: 100%; padding: 8px 14px 8px 38px; border-radius: 999px;
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+        font-size: 14.5px; outline: none;
+      }
+      .topsearch input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+      .topsearch svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-3); pointer-events: none; }
+      .navtoggle { display: none; margin-left: auto; }
+
+      /* ---------- 版心 ---------- */
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 64px; }
+      .layout { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 36px; align-items: start; }
+
+      /* ---------- 页首 ---------- */
+      .intro { padding: 44px 0 8px; max-width: 640px; }
+      .intro h1 {
+        font-family: "Noto Serif SC", serif; font-weight: 900;
+        font-size: clamp(30px, 5vw, 42px); line-height: 1.25; margin: 0 0 10px; letter-spacing: .01em;
+      }
+      .intro p { margin: 0; color: var(--ink-2); font-size: 16.5px; }
+
+      /* ---------- 侧栏 ---------- */
+      .side { position: sticky; top: 84px; padding-top: 40px; }
+      .side h2 {
+        font-size: 13px; font-weight: 700; letter-spacing: .14em; color: var(--ink-3);
+        margin: 0 0 10px; text-transform: none;
+      }
+      .side nav { display: flex; flex-direction: column; gap: 2px; margin-bottom: 30px; }
+      .side nav a {
+        display: flex; justify-content: space-between; align-items: center;
+        text-decoration: none; color: var(--ink-2); font-size: 15px; font-weight: 500;
+        padding: 8px 12px; border-radius: 9px; min-height: 38px;
+      }
+      .side nav a:hover { background: var(--surface-2); color: var(--ink); }
+      .side nav a.on { background: var(--accent-soft); color: var(--accent); }
+      .side nav .cnt { font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+      .side nav a.on .cnt { color: var(--accent); }
+
+      .stack { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 16px 16px 8px; }
+      .stack h2 { margin-bottom: 12px; }
+      .stack ul { list-style: none; margin: 0; padding: 0; }
+      .stack li { padding: 8px 0 10px; border-top: 1px dashed var(--line); }
+      .stack li:first-of-type { border-top: none; padding-top: 0; }
+      .stack .svc { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+      .stack .svc b { font-size: 14.5px; font-weight: 700; }
+      .pill { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+      .pill.done { background: var(--ok-soft); color: var(--ok); }
+      .pill.todo { background: var(--wait-soft); color: var(--wait); }
+      .stack p { margin: 2px 0 4px; font-size: 13px; color: var(--ink-3); line-height: 1.55; }
+
+      /* ---------- 主区 ---------- */
+      .main { padding-top: 40px; min-width: 0; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+      .chip {
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+        border-radius: 999px; padding: 7px 16px; font-size: 14.5px; font-weight: 500;
+        cursor: pointer; min-height: 38px;
+      }
+      .chip:hover { border-color: var(--ink-3); color: var(--ink); }
+      .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+      @media (prefers-color-scheme: dark) { .chip[aria-pressed="true"] { color: #171512; } }
+
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+      .card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px;
+        text-decoration: none; min-height: 172px;
+      }
+      .card .thumb {
+        height: 74px; border-radius: 9px; border: 1.5px dashed var(--line);
+        display: flex; align-items: center; justify-content: center; color: var(--ink-3);
+        background: var(--bg);
+      }
+      .card h3 { font-size: 16.5px; font-weight: 700; margin: 0; line-height: 1.45; }
+      .card p { margin: 0; font-size: 13.5px; color: var(--ink-3); line-height: 1.6; flex: 1; }
+      .card .meta { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-3); }
+      .tag { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 5px; background: var(--surface-2); color: var(--ink-2); }
+      .tag.hot { background: var(--accent-soft); color: var(--accent); }
+
+      .empty {
+        border: 1.5px dashed var(--line); border-radius: var(--radius);
+        padding: 44px 24px; text-align: center; color: var(--ink-3); display: none;
+      }
+      .empty.show { display: block; }
+      .empty b { display: block; color: var(--ink-2); font-size: 16px; margin-bottom: 4px; }
+
+      .band {
+        margin-top: 36px; border-top: 1px solid var(--line); padding-top: 26px;
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+      }
+      .band div h3 { font-family: "Noto Serif SC", serif; font-size: 17px; margin: 0 0 6px; }
+      .band div p { margin: 0; font-size: 14px; color: var(--ink-2); }
+
+      footer {
+        border-top: 1px solid var(--line); margin-top: 56px; padding-top: 22px;
+        display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between;
+        color: var(--ink-3); font-size: 13.5px;
+      }
+      footer nav { display: flex; gap: 18px; }
+      footer a { text-decoration: none; padding: 4px 0; display: inline-flex; align-items: center; min-height: 32px; }
+      footer a:hover { color: var(--ink); }
+
+      /* ---------- 手机 ---------- */
+      @media (max-width: 860px) {
+        .topnav { display: none; }
+        .topsearch { flex: 1 1 auto; }
+        .layout { grid-template-columns: 1fr; gap: 0; }
+        .side { position: static; padding-top: 26px; order: 2; }
+        .side nav { flex-direction: row; flex-wrap: wrap; }
+        .side nav a { border: 1px solid var(--line); background: var(--surface); }
+        .main { padding-top: 30px; }
+        .intro { padding-top: 30px; }
+        .band { grid-template-columns: 1fr; gap: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-in">
+        <a class="wordmark" href="#">学习<em>工具站</em></a>
+        <nav class="topnav" aria-label="主导航">
+          <a href="#" aria-current="page">首页</a>
+          <a href="#library">资料库</a>
+          <a href="#tools">工具</a>
+          <a href="#progress">搭建进度</a>
+        </nav>
+        <div class="topsearch">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+          <input id="q" type="search" placeholder="搜索资料、工具…" aria-label="搜索资料和工具" autocomplete="off" />
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <section class="intro">
+        <h1>资料和工具，放在一个打开就用的地方</h1>
+        <p>不用登录，点开就能看。图片、PDF、表格类学习资料统一收在这里，后面做好的小工具也会挂到这个页面上。</p>
+      </section>
+
+      <div class="layout">
+        <aside class="side">
+          <h2>分类</h2>
+          <nav id="sidenav" aria-label="分类">
+            <a href="#" class="on" data-cat="all">全部内容 <span class="cnt" data-cnt="all"></span></a>
+            <a href="#" data-cat="image">图片资料 <span class="cnt" data-cnt="image"></span></a>
+            <a href="#" data-cat="pdf">PDF 文档 <span class="cnt" data-cnt="pdf"></span></a>
+            <a href="#" data-cat="table">表格 <span class="cnt" data-cnt="table"></span></a>
+            <a href="#" data-cat="tool">小工具 <span class="cnt" data-cnt="tool"></span></a>
+          </nav>
+
+          <div class="stack" id="progress">
+            <h2>搭建进度 · 全部免费、不绑卡</h2>
+            <ul>
+              <li>
+                <div class="svc"><b>GitHub</b><span class="pill done">已登录</span></div>
+                <p>账号 xhzsyywq，放网站代码；现有仓库待挑出第一个要部署的。</p>
+              </li>
+              <li>
+                <div class="svc"><b>Vercel</b><span class="pill done">已登录</span></div>
+                <p>团队 sum（sum-e4f3），Hobby 免费版，负责部署和加速。</p>
+              </li>
+              <li>
+                <div class="svc"><b>Turso</b><span class="pill done">已登录</span></div>
+                <p>账号 asiamarier245，Starter 免费版，放表格数据和资料索引。</p>
+              </li>
+              <li>
+                <div class="svc"><b>GitHub × Vercel 授权</b><span class="pill todo">待办</span></div>
+                <p>授权 Vercel 读取仓库后，才能一键部署。</p>
+              </li>
+              <li>
+                <div class="svc"><b>Cloudflare</b><span class="pill todo">待接入</span></div>
+                <p>免费版做 DDoS 防护和域名解析。</p>
+              </li>
+              <li>
+                <div class="svc"><b>正式域名</b><span class="pill todo">待绑定</span></div>
+                <p>域名定下来后绑到站点上。</p>
+              </li>
+            </ul>
+          </div>
+        </aside>
+
+        <main class="main" id="library">
+          <div class="chips" role="group" aria-label="按类型筛选">
+            <button class="chip" data-cat="all" aria-pressed="true">全部</button>
+            <button class="chip" data-cat="image" aria-pressed="false">图片</button>
+            <button class="chip" data-cat="pdf" aria-pressed="false">PDF</button>
+            <button class="chip" data-cat="table" aria-pressed="false">表格</button>
+            <button class="chip" data-cat="tool" aria-pressed="false">工具</button>
+          </div>
+
+          <div class="grid" id="grid">
+            <a class="card" href="#" data-cat="image" data-title="图片资料示例">
+              <div class="thumb">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L6 21"/></svg>
+              </div>
+              <h3>图片资料 · 占位</h3>
+              <p>第一份图片资料会放在这里：图注、来源和打开大图都从这张卡片进。</p>
+              <div class="meta"><span class="tag">图片</span><span>待添加</span></div>
+            </a>
+
+            <a class="card" href="#" data-cat="pdf" data-title="PDF 文档示例">
+              <div class="thumb">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 11h2"/></svg>
+              </div>
+              <h3>PDF 文档 · 占位</h3>
+              <p>第一份 PDF 会放在这里：点开在线阅读，也能下载到本地慢慢看。</p>
+              <div class="meta"><span class="tag">PDF</span><span>待添加</span></div>
+            </a>
+
+            <a class="card" href="#" data-cat="table" data-title="表格示例">
+              <div class="thumb">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+              </div>
+              <h3>表格 · 占位</h3>
+              <p>第一张表格会放在这里：数据存 Turso，在页面上直接查、直接看。</p>
+              <div class="meta"><span class="tag">表格</span><span>待添加</span></div>
+            </a>
+
+            <a class="card" href="#" data-cat="tool" data-title="小工具示例" id="tools">
+              <div class="thumb">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3 3.7-3.7z"/></svg>
+              </div>
+              <h3>小工具 · 占位</h3>
+              <p>第一个自制小工具会挂在这里，单个项目控制在 50MB 以内，打开即用。</p>
+              <div class="meta"><span class="tag hot">工具</span><span>待添加</span></div>
+            </a>
+          </div>
+
+          <div class="empty" id="empty">
+            <b>这里还没有内容</b>
+            <span id="emptyText">换个分类看看，或者等第一份资料加进来。</span>
+          </div>
+
+          <section class="band" aria-label="使用说明">
+            <div>
+              <h3>免登录</h3>
+              <p>工具页不设账号，链接打开就能用，分享给谁都方便。</p>
+            </div>
+            <div>
+              <h3>打开快</h3>
+              <p>纯静态页面，后续经 Vercel 部署、接入 Cloudflare 免费防护，不拖泥带水。</p>
+            </div>
+            <div>
+              <h3>容量留足</h3>
+              <p>代码和文件走 GitHub，数据放 Turso 免费 5GB，单个工具页控制在 50MB 内。</p>
+            </div>
+          </section>
+
+          <footer>
+            <span>学习工具站 · 壳子已搭好，内容陆续添加</span>
+            <nav aria-label="页脚">
+              <a href="#library">资料库</a>
+              <a href="#tools">工具</a>
+              <a href="#progress">搭建进度</a>
+            </nav>
+          </footer>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+        var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+        var sideLinks = Array.prototype.slice.call(document.querySelectorAll('#sidenav a'));
+        var empty = document.getElementById('empty');
+        var emptyText = document.getElementById('emptyText');
+        var q = document.getElementById('q');
+        var state = { cat: 'all', text: '' };
+
+        // 分类计数
+        var counts = { all: cards.length };
+        cards.forEach(function (c) {
+          var k = c.getAttribute('data-cat');
+          counts[k] = (counts[k] || 0) + 1;
+        });
+        document.querySelectorAll('[data-cnt]').forEach(function (el) {
+          el.textContent = counts[el.getAttribute('data-cnt')] || 0;
+        });
+
+        function apply() {
+          var visible = 0;
+          cards.forEach(function (c) {
+            var okCat = state.cat === 'all' || c.getAttribute('data-cat') === state.cat;
+            var okText = !state.text || (c.getAttribute('data-title') + c.querySelector('h3').textContent).toLowerCase().indexOf(state.text) !== -1;
+            var show = okCat && okText;
+            c.style.display = show ? '' : 'none';
+            if (show) visible++;
+          });
+          empty.classList.toggle('show', visible === 0);
+          emptyText.textContent = state.text
+            ? '没有找到和“' + state.text + '”相关的内容，换个关键词试试。'
+            : '这个分类下还没加内容，第一份资料会优先放进来。';
+        }
+
+        function setCat(cat) {
+          state.cat = cat;
+          chips.forEach(function (ch) { ch.setAttribute('aria-pressed', ch.getAttribute('data-cat') === cat ? 'true' : 'false'); });
+          sideLinks.forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-cat') === cat); });
+          apply();
+        }
+
+        chips.forEach(function (ch) {
+          ch.addEventListener('click', function () { setCat(ch.getAttribute('data-cat')); });
+        });
+        sideLinks.forEach(function (a) {
+          a.addEventListener('click', function (e) { e.preventDefault(); setCat(a.getAttribute('data-cat')); });
+        });
+        q.addEventListener('input', function () {
+          state.text = q.value.trim().toLowerCase();
+          apply();
+        });
+
+        // 占位卡片暂不跳转
+        cards.forEach(function (c) {
+          c.addEventListener('click', function (e) { e.preventDefault(); });
+        });
+
+        apply();
+      })();
+    </script>
+  </body>
+</html>
