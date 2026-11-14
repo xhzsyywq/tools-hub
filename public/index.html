@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的小工具站</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="/deepsleep-192.png">
+<link rel="apple-touch-icon" href="/deepsleep-192.png">
+<style>body{font-family:system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.7}h1{font-size:24px}a{color:#0070f3}</style>
+</head>
+<body>
+<h1>我的小工具站</h1>
+<p>自己用的小工具 + 学习资料（图片 / PDF / 表格），不用登录。</p>
+<h2>工具</h2>
+<ul><li>（在这里加你的工具页链接）</li></ul>
+<h2>学习资料</h2>
+<p>资料文件放在 <code>public/materials/</code>，列表从 Turso 读（见 <code>api/materials.js</code>）。</p>
+<ul id="list"><li>加载中……</li></ul>
+<script>
+fetch('/api/materials').then(r=>r.json()).then(d=>{
+  const el=document.getElementById('list');
+  if(!d.length){el.innerHTML='<li>还没有资料，先把文件放进 public/materials/ 并在 Turso 里记一条。</li>';return;}
+  el.innerHTML=d.map(m=>{
+    const href=m.file_url||'#';
+    const meta=[m.category,m.type].filter(Boolean).join(' · ');
+    const tag=m.tags?` <span>${m.tags}</span>`:' ';
+    return `<li><a href="${href}">${m.title}</a>${meta?` — ${meta}`:''}${tag}</li>`;
+  }).join('');
+}).catch(()=>{document.getElementById('list').innerHTML='<li>列表暂时读不到，先直接看 public/materials/ 里的文件。</li>';});
+</script>
+</body>
+</html>
