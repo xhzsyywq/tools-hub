@@ -24,7 +24,7 @@ fetch('/api/materials').then(r=>r.json()).then(d=>{
   el.innerHTML=d.map(m=>{
     const href=m.file_url||'#';
     const meta=[m.category,m.type].filter(Boolean).join(' · ');
-    const tag=m.tags?` <span>${m.tags}</span>`:' ';
+    const tag=m.tags?` <span>${m.tags}</span>` :'';
     return `<li><a href="${href}">${m.title}</a>${meta?` — ${meta}`:''}${tag}</li>`;
   }).join('');
 }).catch(()=>{document.getElementById('list').innerHTML='<li>列表暂时读不到，先直接看 public/materials/ 里的文件。</li>';});
